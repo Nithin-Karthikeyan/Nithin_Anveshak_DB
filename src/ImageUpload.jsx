@@ -45,7 +45,7 @@ const uploadImage = async () => {
     console.log("Uploaded:", data);
 
     // Step 2: Send to backend → Notion
-    const notionRes = await fetch("https://anveshak-db.vercel.app", {
+    const notionRes = await fetch("https://anveshak-db.vercel.app/create-bill", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
