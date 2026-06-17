@@ -47,7 +47,7 @@ app.post("/api/create-bill", async (req, res) => {
             url: image_url || null,
           },
 
-          "Invoice Number": {
+          "Invoice No.": {
             number: invoice_number ?? null,
           },
 
