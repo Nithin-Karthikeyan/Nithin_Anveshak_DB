@@ -1,4 +1,4 @@
-import ImageUpload from "./ImageUpload.jsx";
+import ImageUpload from "../ImageUpload.jsx";
 
 function App() {
   return (
