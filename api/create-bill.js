@@ -48,7 +48,11 @@ app.post("/api/create-bill", async (req, res) => {
           },
 
           "Invoice No.": {
-            number: invoice_number ?? null,
+            title: [
+              {
+                text: { content: String(invoice_number ?? "") },
+              },
+            ],
           },
 
           Date: {
