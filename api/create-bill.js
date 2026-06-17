@@ -15,7 +15,14 @@ app.use(cors({
 app.use(express.json());
 
 app.post("/api/create-bill", async (req, res) => {
-  const { image_url } = req.body;
+  const {
+    image_url,
+    invoice_number,
+    date,
+    total_amount,
+    description,
+    gst,
+  } = req.body;
 
   try {
     const notionRes = await axios.post(
@@ -25,15 +32,51 @@ app.post("/api/create-bill", async (req, res) => {
           database_id: process.env.NOTION_DB_BILLS_ID,
         },
         properties: {
-        //   Name: {
-        //     title: [
-        //       {
-        //         text: { content: "New Bill" },
-        //       },
-        //     ],
-        //   },
-          "Link": {
-            url: image_url,
+          // Title is REQUIRED in Notion DB
+          // Name: {
+          //   title: [
+          //     {
+          //       text: {
+          //         content: `Bill ${invoice_number || ""}`,
+          //       },
+          //     },
+          //   ],
+          // },
+
+          Link: {
+            url: image_url || null,
+          },
+
+          "Invoice Number": {
+            number: invoice_number ?? null,
+          },
+
+          Date: {
+            date: date
+              ? {
+                  start: date,
+                }
+              : null,
+          },
+
+          "Total Amount": {
+            number: total_amount ?? null,
+          },
+
+          Description: {
+            rich_text: description
+              ? [
+                  {
+                    text: {
+                      content: description,
+                    },
+                  },
+                ]
+              : [],
+          },
+
+          GST: {
+            checkbox: gst || false,
           },
         },
       },
@@ -53,5 +96,5 @@ app.post("/api/create-bill", async (req, res) => {
   }
 });
 
-//app.listen(3001, () => console.log("Server running on port 3001"));
-export default app;
+app.listen(3001, () => console.log("Server running on port 3001"));
+//export default app;
