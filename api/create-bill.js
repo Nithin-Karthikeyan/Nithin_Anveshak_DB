@@ -14,7 +14,7 @@ app.use(cors({
 
 app.use(express.json());
 
-app.post("/create-bill", async (req, res) => {
+app.post("/api/create-bill", async (req, res) => {
   const { image_url } = req.body;
 
   try {
