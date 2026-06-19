@@ -2,6 +2,7 @@ import express from "express";
 import axios from "axios";
 import dotenv from "dotenv";
 import cors from "cors";
+import apiRoutes from "./members.js"; // Imported the router from your second file
 
 dotenv.config();
 
@@ -13,6 +14,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Mount the router from members.js onto your application
+app.use(apiRoutes);
 
 app.post("/api/create-bill", async (req, res) => {
   const {
