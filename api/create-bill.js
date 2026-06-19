@@ -15,7 +15,7 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use(apiRoutes);
+app.use("/api", apiRoutes);
 
 app.post("/api/create-bill", async (req, res) => {
   const {

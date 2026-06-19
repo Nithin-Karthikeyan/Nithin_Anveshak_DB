@@ -51,7 +51,7 @@ router.post("/create-bill", async (req, res) => {
   try {
     const response = await notion.pages.create({
       parent: {
-        database_id: process.env.BILLS_DB_ID,
+        database_id: process.env.NOTION_DB_BILLS_ID,
       },
       properties: {
         "Invoice Number": {
