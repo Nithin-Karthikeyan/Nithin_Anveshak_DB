@@ -16,6 +16,7 @@ export default function ImageUpload() {
   // Contributors
   const [billId, setBillId] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [contributors, setContributors] = useState([
     { name: "", amount: "" } // Changed memberId to name
   ]);
@@ -134,7 +135,7 @@ export default function ImageUpload() {
       console.log("No billId yet");
       return;
     }
-
+    setSubmitting(true);
     try {
       const res = await fetch(
         "https://anveshak-db.vercel.app/api/add-contributors",
@@ -240,65 +241,65 @@ export default function ImageUpload() {
 
       {/* CONTRIBUTORS SECTION */}
       {billId && (
-  <div style={{ marginTop: 30 }}>
-    {submitted ? (
-      <div style={{ color: "green", fontWeight: "bold", padding: "10px 0" }}>
-        <h3>Submitted successfully!</h3>
+      <div style={{ marginTop: 30 }}>
+        {submitted ? (
+          <div style={{ color: "green", fontWeight: "bold", padding: "10px 0" }}>
+            <h3>Submitted successfully!</h3>
+          </div>
+        ) : (
+          <>
+            <h3>Add Contributors</h3>
+
+            {contributors.map((c, i) => {
+              // Track selected names instead of IDs
+              const selectedNames = contributors.map((c) => c.name);
+
+              return (
+                <div key={i} style={{ marginBottom: 10 }}>
+                  <select
+                    value={c.name}
+                    onChange={(e) =>
+                      updateContributor(i, "name", e.target.value)
+                    }
+                  >
+                    <option value="">Select Member</option>
+
+                    {members
+                      .filter(
+                        (m) =>
+                          !selectedNames.includes(m.name) ||
+                          m.name === c.name
+                      )
+                      .map((m) => (
+                        <option key={m.name} value={m.name}>
+                          {m.name}
+                        </option>
+                      ))}
+                  </select>
+
+                  <input
+                    type="number"
+                    placeholder="Amount"
+                    value={c.amount}
+                    onChange={(e) =>
+                      updateContributor(i, "amount", e.target.value)
+                    }
+                  />
+                </div>
+              );
+            })}
+
+            <button onClick={addContributor}>+ Add More</button>
+
+            <br /><br />
+
+            <button onClick={submitContributors} disabled={submitting}>
+              {submitting ? "Submitting..." : "Submit Contributors(If none leave blank)"}
+            </button>
+          </>
+        )}
       </div>
-    ) : (
-      <>
-        <h3>Add Contributors</h3>
-
-        {contributors.map((c, i) => {
-          // Track selected names instead of IDs
-          const selectedNames = contributors.map((c) => c.name);
-
-          return (
-            <div key={i} style={{ marginBottom: 10 }}>
-              <select
-                value={c.name}
-                onChange={(e) =>
-                  updateContributor(i, "name", e.target.value)
-                }
-              >
-                <option value="">Select Member</option>
-
-                {members
-                  .filter(
-                    (m) =>
-                      !selectedNames.includes(m.name) ||
-                      m.name === c.name
-                  )
-                  .map((m) => (
-                    <option key={m.name} value={m.name}>
-                      {m.name}
-                    </option>
-                  ))}
-              </select>
-
-              <input
-                type="number"
-                placeholder="Amount"
-                value={c.amount}
-                onChange={(e) =>
-                  updateContributor(i, "amount", e.target.value)
-                }
-              />
-            </div>
-          );
-        })}
-
-        <button onClick={addContributor}>+ Add More</button>
-
-        <br /><br />
-
-        <button onClick={submitContributors}>
-          Submit Contributors
-        </button>
-      </>
     )}
-  </div>
-)}
     </div>
   );
 }
