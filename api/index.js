@@ -11,6 +11,10 @@ const notion = new Client({ auth: process.env.NOTION_API_KEY });
 app.use(cors({ origin: process.env.FRONTEND_URL, methods: ["GET", "POST"] }));
 app.use(express.json());
 
+if (!process.env.NOTION_API_KEY || !process.env.MEMBERS_DB_ID) {
+  console.error("Missing critical Notion environment variables.");
+}
+
 // GET /api/members
 app.get("/api/members", async (req, res) => {
   try {
@@ -25,7 +29,12 @@ app.get("/api/members", async (req, res) => {
     res.json(members);
   } catch (error) {
     console.error("Error fetching members:", error);
-    res.status(500).json({ error: "Failed to fetch members" });
+    //res.status(500).json({ error: "Failed to fetch members" });
+    res.status(500).json({ 
+    error: error.message, 
+    code: error.code, // e.g., "object_not_found" or "validation_error"
+    status: error.status 
+  });
   }
 });
 
