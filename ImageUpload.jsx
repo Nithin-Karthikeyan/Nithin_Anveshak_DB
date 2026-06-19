@@ -16,10 +16,10 @@ export default function ImageUpload() {
   // Contributors
   const [billId, setBillId] = useState(null);
   const [contributors, setContributors] = useState([
-    { memberId: "", amount: "" }
+    { name: "", amount: "" } // Changed memberId to name
   ]);
 
-  // NEW: Members list
+  // Members list
   const [members, setMembers] = useState([]);
 
   // ========================
@@ -115,7 +115,7 @@ export default function ImageUpload() {
   // CONTRIBUTORS HANDLING
   // ========================
   const addContributor = () => {
-    setContributors([...contributors, { memberId: "", amount: "" }]);
+    setContributors([...contributors, { name: "", amount: "" }]);
   };
 
   const updateContributor = (index, field, value) => {
@@ -144,7 +144,7 @@ export default function ImageUpload() {
           body: JSON.stringify({
             billId,
             contributors: contributors.map((c) => ({
-              memberId: c.memberId,
+              name: c.name, // Sends name instead of memberId
               amount: Number(c.amount),
             })),
           }),
@@ -235,14 +235,15 @@ export default function ImageUpload() {
           <h3>Add Contributors</h3>
 
           {contributors.map((c, i) => {
-            const selectedIds = contributors.map(c => c.memberId);
+            // Track selected names instead of IDs
+            const selectedNames = contributors.map(c => c.name);
 
             return (
               <div key={i} style={{ marginBottom: 10 }}>
                 <select
-                  value={c.memberId}
+                  value={c.name}
                   onChange={(e) =>
-                    updateContributor(i, "memberId", e.target.value)
+                    updateContributor(i, "name", e.target.value)
                   }
                 >
                   <option value="">Select Member</option>
@@ -250,11 +251,11 @@ export default function ImageUpload() {
                   {members
                     .filter(
                       (m) =>
-                        !selectedIds.includes(m.id) ||
-                        m.id === c.memberId
+                        !selectedNames.includes(m.name) ||
+                        m.name === c.name
                     )
                     .map((m) => (
-                      <option key={m.id} value={m.id}>
+                      <option key={m.name} value={m.name}>
                         {m.name}
                       </option>
                     ))}
