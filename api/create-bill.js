@@ -93,12 +93,17 @@ app.post("/api/create-bill", async (req, res) => {
       }
     );
 
-    res.json(notionRes.data);
+    // Modified to return the billId explicitly alongside the Notion payload
+    res.json({
+      billId: notionRes.data.id,
+      ...notionRes.data
+    });
+    
   } catch (err) {
     console.error(err.response?.data || err.message);
     res.status(500).json({ error: "Failed to create bill" });
   }
 });
 
-app.listen(3001, () => console.log("Server running on port 3001"));
-//export default app;
+//app.listen(3001, () => console.log("Server running on port 3001"));
+export default app;
