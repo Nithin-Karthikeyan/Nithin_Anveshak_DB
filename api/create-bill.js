@@ -2,7 +2,7 @@ import express from "express";
 import axios from "axios";
 import dotenv from "dotenv";
 import cors from "cors";
-import apiRoutes from "./members.js"; // Imported the router from your second file
+import apiRoutes from "./members.js"; 
 
 dotenv.config();
 
@@ -15,7 +15,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// Mount the router from members.js onto your application
 app.use(apiRoutes);
 
 app.post("/api/create-bill", async (req, res) => {
@@ -28,6 +27,36 @@ app.post("/api/create-bill", async (req, res) => {
     gst,
   } = req.body;
 
+  // Build the properties dynamically so we don't send malformed null/empty fields
+  const properties = {
+    "Invoice No.": {
+      title: [
+        {
+          text: { content: invoice_number ? String(invoice_number) : "B-UNKNOWN" },
+        },
+      ],
+    },
+    GST: {
+      checkbox: Boolean(gst),
+    },
+  };
+
+  // Only add these properties if they actually have data
+  if (image_url) {
+    properties["Link"] = { url: image_url };
+  }
+  if (date) {
+    properties["Date"] = { date: { start: date } };
+  }
+  if (total_amount !== undefined && total_amount !== null) {
+    properties["Total Amount"] = { number: Number(total_amount) };
+  }
+  if (description) {
+    properties["Description"] = {
+      rich_text: [{ text: { content: description } }],
+    };
+  }
+
   try {
     const notionRes = await axios.post(
       "https://api.notion.com/v1/pages",
@@ -35,58 +64,7 @@ app.post("/api/create-bill", async (req, res) => {
         parent: {
           database_id: process.env.NOTION_DB_BILLS_ID,
         },
-        properties: {
-          // Title is REQUIRED in Notion DB
-          // Name: {
-          //   title: [
-          //     {
-          //       text: {
-          //         content: `Bill ${invoice_number || ""}`,
-          //       },
-          //     },
-          //   ],
-          // },
-
-          Link: {
-            url: image_url || null,
-          },
-
-          "Invoice No.": {
-            title: [
-              {
-                text: { content: String(invoice_number ?? "") },
-              },
-            ],
-          },
-
-          Date: {
-            date: date
-              ? {
-                  start: date,
-                }
-              : null,
-          },
-
-          "Total Amount": {
-            number: total_amount ?? null,
-          },
-
-          Description: {
-            rich_text: description
-              ? [
-                  {
-                    text: {
-                      content: description,
-                    },
-                  },
-                ]
-              : [],
-          },
-
-          GST: {
-            checkbox: gst || false,
-          },
-        },
+        properties: properties,
       },
       {
         headers: {
@@ -97,17 +75,20 @@ app.post("/api/create-bill", async (req, res) => {
       }
     );
 
-    // Modified to return the billId explicitly alongside the Notion payload
     res.json({
       billId: notionRes.data.id,
       ...notionRes.data
     });
     
   } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).json({ error: "Failed to create bill" });
+    // Advanced logging: This prints the exact reason Notion sent a 500 error
+    if (err.response && err.response.data) {
+      console.error("Notion API Error Details:", JSON.stringify(err.response.data, null, 2));
+    } else {
+      console.error("Server Error:", err.message);
+    }
+    res.status(500).json({ error: "Failed to create bill", details: err.response?.data?.message || err.message });
   }
 });
 
-//app.listen(3001, () => console.log("Server running on port 3001"));
 export default app;
