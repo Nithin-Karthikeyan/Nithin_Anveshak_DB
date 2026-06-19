@@ -18,10 +18,11 @@ if (!process.env.NOTION_API_KEY || !process.env.MEMBERS_DB_ID) {
 // GET /api/members
 app.get("/api/members", async (req, res) => {
   try {
-    const response = await notion.databases.retrieve({
+    const response = await notion.databases.query({
       database_id: process.env.MEMBERS_DB_ID,
       sorts: [{ property: "Name", direction: "ascending" }],
     });
+    
     const members = response.results.map((page) => ({
       id: page.id,
       name: page.properties.Name.title[0]?.text?.content || "Unnamed",
