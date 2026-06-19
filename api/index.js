@@ -22,7 +22,10 @@ app.get("/api/members", async (req, res) => {
       database_id: process.env.MEMBERS_DB_ID,
       //sorts: [{ property: "Name", direction: "ascending" }],
     });
-    
+
+    // console.log("Properties:", Object.keys(response.results[0]?.properties || {}));
+    // res.json(response.results[0]?.properties);
+
     const members = response.results.map((page) => ({
       id: page.id,
       name: page.properties.Name.title[0]?.text?.content || "Unnamed",
