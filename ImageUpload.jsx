@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ImageUpload() {
   const [file, setFile] = useState(null);
@@ -6,13 +6,44 @@ export default function ImageUpload() {
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState(null);
 
-  // NEW STATES
+  // Bill fields
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [date, setDate] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
   const [description, setDescription] = useState("");
   const [gst, setGst] = useState(false);
 
+  // Contributors
+  const [billId, setBillId] = useState(null);
+  const [contributors, setContributors] = useState([
+    { memberId: "", amount: "" }
+  ]);
+
+  // NEW: Members list
+  const [members, setMembers] = useState([]);
+
+  // ========================
+  // FETCH MEMBERS
+  // ========================
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const res = await fetch(
+          "https://anveshak-db.vercel.app/api/members"
+        );
+        const data = await res.json();
+        setMembers(data);
+      } catch (err) {
+        console.error("Failed to fetch members:", err);
+      }
+    };
+
+    fetchMembers();
+  }, []);
+
+  // ========================
+  // FILE HANDLING
+  // ========================
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (!selected) return;
@@ -20,13 +51,11 @@ export default function ImageUpload() {
     setPreview(URL.createObjectURL(selected));
   };
 
+  // ========================
+  // STEP 1: UPLOAD BILL
+  // ========================
   const uploadImage = async () => {
-    console.log("Upload clicked");
-
-    if (!file) {
-      console.log("No file selected");
-      return;
-    }
+    if (!file) return;
 
     setUploading(true);
 
@@ -36,7 +65,6 @@ export default function ImageUpload() {
     formData.append("folder", "bills");
 
     try {
-      // Step 1: Upload to Cloudinary
       const res = await fetch(
         "https://api.cloudinary.com/v1_1/djnurf6a0/image/upload",
         {
@@ -46,15 +74,11 @@ export default function ImageUpload() {
       );
 
       const data = await res.json();
-
       if (!res.ok) {
-        console.error("Cloudinary error:", data);
+        console.error(data);
         return;
       }
 
-      console.log("Uploaded:", data);
-
-      // Step 2: Send to backend → Notion
       const notionRes = await fetch(
         "https://anveshak-db.vercel.app/api/create-bill",
         {
@@ -74,18 +98,69 @@ export default function ImageUpload() {
       );
 
       const notionData = await notionRes.json();
-      console.log("Notion response:", notionData);
+
+      // store billId
+      setBillId(notionData.billId);
 
       setResult(data);
+      console.log("Bill created:", notionData);
     } catch (err) {
-      console.error("Error:", err);
+      console.error(err);
     }
 
     setUploading(false);
   };
 
+  // ========================
+  // CONTRIBUTORS HANDLING
+  // ========================
+  const addContributor = () => {
+    setContributors([...contributors, { memberId: "", amount: "" }]);
+  };
+
+  const updateContributor = (index, field, value) => {
+    const updated = [...contributors];
+    updated[index][field] = value;
+    setContributors(updated);
+  };
+
+  // ========================
+  // STEP 2: SEND CONTRIBUTORS
+  // ========================
+  const submitContributors = async () => {
+    if (!billId) {
+      console.log("No billId yet");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        "https://anveshak-db.vercel.app/api/add-contributors",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            billId,
+            contributors: contributors.map((c) => ({
+              memberId: c.memberId,
+              amount: Number(c.amount),
+            })),
+          }),
+        }
+      );
+
+      const data = await res.json();
+      console.log("Contributors added:", data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div style={{ padding: 20 }}>
+      {/* FILE INPUT */}
       <input type="file" accept="image/*" onChange={handleFileChange} />
 
       {preview && (
@@ -94,7 +169,7 @@ export default function ImageUpload() {
         </div>
       )}
 
-      {/* NEW INPUT FIELDS */}
+      {/* BILL INPUTS */}
       <div style={{ marginTop: 10 }}>
         <input
           type="number"
@@ -141,14 +216,69 @@ export default function ImageUpload() {
         </label>
       </div>
 
+      {/* UPLOAD BUTTON */}
       <button onClick={uploadImage} disabled={uploading}>
-        {uploading ? "Uploading..." : "Upload"}
+        {uploading ? "Uploading..." : "Upload Bill"}
       </button>
 
+      {/* RESULT */}
       {result && (
         <div style={{ marginTop: 10 }}>
           <p><strong>URL:</strong> {result.secure_url}</p>
           <p><strong>Public ID:</strong> {result.public_id}</p>
+        </div>
+      )}
+
+      {/* CONTRIBUTORS SECTION */}
+      {billId && (
+        <div style={{ marginTop: 30 }}>
+          <h3>Add Contributors</h3>
+
+          {contributors.map((c, i) => {
+            const selectedIds = contributors.map(c => c.memberId);
+
+            return (
+              <div key={i} style={{ marginBottom: 10 }}>
+                <select
+                  value={c.memberId}
+                  onChange={(e) =>
+                    updateContributor(i, "memberId", e.target.value)
+                  }
+                >
+                  <option value="">Select Member</option>
+
+                  {members
+                    .filter(
+                      (m) =>
+                        !selectedIds.includes(m.id) ||
+                        m.id === c.memberId
+                    )
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                </select>
+
+                <input
+                  type="number"
+                  placeholder="Amount"
+                  value={c.amount}
+                  onChange={(e) =>
+                    updateContributor(i, "amount", e.target.value)
+                  }
+                />
+              </div>
+            );
+          })}
+
+          <button onClick={addContributor}>+ Add More</button>
+
+          <br /><br />
+
+          <button onClick={submitContributors}>
+            Submit Contributors
+          </button>
         </div>
       )}
     </div>
