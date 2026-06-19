@@ -71,4 +71,89 @@ app.post("/api/create-bill", async (req, res) => {
   }
 });
 
+// POST /api/add-contributors
+app.post('/api/add-contributors', async (req, res) => {
+  const { invoice_number, contributors } = req.body;
+
+  if (!invoice_number || !Array.isArray(contributors) || contributors.length === 0) {
+    return res.status(400).json({ error: 'invoice_number and contributors[] are required' });
+  }
+
+  try {
+    // 1. Find the bill page by Invoice No.
+    const billsQuery = await notion.databases.query({
+      database_id: process.env.NOTION_DB_BILLS_ID,
+      filter: {
+        property: 'Invoice No.',
+        title: { equals: invoice_number },
+      },
+    });
+
+    if (billsQuery.results.length === 0) {
+      return res.status(404).json({ error: `No bill found with Invoice No. "${invoice_number}"` });
+    }
+
+    const billPageId = billsQuery.results[0].id;
+
+    // 2. For each contributor: resolve member → create Contributions row
+    const created = [];
+    const errors = [];
+
+    for (const { name, amount } of contributors) {
+      if (!name || amount === undefined || amount === '') {
+        errors.push({ name, reason: 'Missing name or amount' });
+        continue;
+      }
+
+      // Find the member page by name
+      const memberQuery = await notion.databases.query({
+        database_id: process.env.MEMBERS_DB_ID,
+        filter: {
+          property: 'Name',   // adjust if your title column has a different label
+          title: { equals: name },
+        },
+      });
+
+      if (memberQuery.results.length === 0) {
+        errors.push({ name, reason: `Member "${name}" not found in Members DB` });
+        continue;
+      }
+
+      const memberPageId = memberQuery.results[0].id;
+
+      // Create the contribution row
+      const contribution = await notion.pages.create({
+        parent: { database_id: process.env.NOTION_CONTRIBUTIONS_DB_ID },
+        properties: {
+          'Bill': {
+            relation: [{ id: billPageId }],
+          },
+          'Contributor': {
+            relation: [{ id: memberPageId }],
+          },
+          'Amount': {
+            number: parseFloat(amount),
+          },
+          'Serial No.': {
+            title: [{ text: { content: name } }],
+          },
+        },
+      });
+
+      created.push({ name, contributionId: contribution.id });
+    }
+
+    res.json({
+      success: true,
+      billPageId,
+      created,
+      ...(errors.length > 0 && { errors }),
+    });
+
+  } catch (err) {
+    console.error('add-contributors error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default app;

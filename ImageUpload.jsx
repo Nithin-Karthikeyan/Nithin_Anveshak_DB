@@ -15,9 +15,11 @@ export default function ImageUpload() {
 
   // Contributors
   const [billId, setBillId] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
   const [contributors, setContributors] = useState([
     { name: "", amount: "" } // Changed memberId to name
   ]);
+  
 
   // Members list
   const [members, setMembers] = useState([]);
@@ -88,7 +90,7 @@ export default function ImageUpload() {
           },
           body: JSON.stringify({
             image_url: data.secure_url,
-            invoice_number: Number(invoiceNumber),
+            invoice_number: invoiceNumber,
             date: date,
             total_amount: Number(totalAmount),
             description: description,
@@ -142,7 +144,7 @@ export default function ImageUpload() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            billId,
+            invoice_number: invoiceNumber,
             contributors: contributors.map((c) => ({
               name: c.name, // Sends name instead of memberId
               amount: Number(c.amount),
@@ -151,8 +153,15 @@ export default function ImageUpload() {
         }
       );
 
+      if (!res.ok) {
+        const text = await res.text(); // read raw response
+        console.error("Server error:", res.status, text);
+        throw new Error(`Server returned ${res.status}`);
+      }
+
       const data = await res.json();
-      console.log("Contributors added:", data);
+      console.log("Success:", data);
+      setSubmitted(true);
     } catch (err) {
       console.error(err);
     }
@@ -172,7 +181,7 @@ export default function ImageUpload() {
       {/* BILL INPUTS */}
       <div style={{ marginTop: 10 }}>
         <input
-          type="number"
+          type="text"
           placeholder="Invoice Number"
           value={invoiceNumber}
           onChange={(e) => setInvoiceNumber(e.target.value)}
@@ -231,57 +240,65 @@ export default function ImageUpload() {
 
       {/* CONTRIBUTORS SECTION */}
       {billId && (
-        <div style={{ marginTop: 30 }}>
-          <h3>Add Contributors</h3>
+  <div style={{ marginTop: 30 }}>
+    {submitted ? (
+      <div style={{ color: "green", fontWeight: "bold", padding: "10px 0" }}>
+        <h3>Submitted successfully!</h3>
+      </div>
+    ) : (
+      <>
+        <h3>Add Contributors</h3>
 
-          {contributors.map((c, i) => {
-            // Track selected names instead of IDs
-            const selectedNames = contributors.map(c => c.name);
+        {contributors.map((c, i) => {
+          // Track selected names instead of IDs
+          const selectedNames = contributors.map((c) => c.name);
 
-            return (
-              <div key={i} style={{ marginBottom: 10 }}>
-                <select
-                  value={c.name}
-                  onChange={(e) =>
-                    updateContributor(i, "name", e.target.value)
-                  }
-                >
-                  <option value="">Select Member</option>
+          return (
+            <div key={i} style={{ marginBottom: 10 }}>
+              <select
+                value={c.name}
+                onChange={(e) =>
+                  updateContributor(i, "name", e.target.value)
+                }
+              >
+                <option value="">Select Member</option>
 
-                  {members
-                    .filter(
-                      (m) =>
-                        !selectedNames.includes(m.name) ||
-                        m.name === c.name
-                    )
-                    .map((m) => (
-                      <option key={m.name} value={m.name}>
-                        {m.name}
-                      </option>
-                    ))}
-                </select>
+                {members
+                  .filter(
+                    (m) =>
+                      !selectedNames.includes(m.name) ||
+                      m.name === c.name
+                  )
+                  .map((m) => (
+                    <option key={m.name} value={m.name}>
+                      {m.name}
+                    </option>
+                  ))}
+              </select>
 
-                <input
-                  type="number"
-                  placeholder="Amount"
-                  value={c.amount}
-                  onChange={(e) =>
-                    updateContributor(i, "amount", e.target.value)
-                  }
-                />
-              </div>
-            );
-          })}
+              <input
+                type="number"
+                placeholder="Amount"
+                value={c.amount}
+                onChange={(e) =>
+                  updateContributor(i, "amount", e.target.value)
+                }
+              />
+            </div>
+          );
+        })}
 
-          <button onClick={addContributor}>+ Add More</button>
+        <button onClick={addContributor}>+ Add More</button>
 
-          <br /><br />
+        <br /><br />
 
-          <button onClick={submitContributors}>
-            Submit Contributors
-          </button>
-        </div>
-      )}
+        <button onClick={submitContributors}>
+          Submit Contributors
+        </button>
+      </>
+    )}
+  </div>
+)}
     </div>
   );
 }
