@@ -20,7 +20,7 @@ app.get("/api/members", async (req, res) => {
   try {
     const response = await notion.databases.query({
       database_id: process.env.MEMBERS_DB_ID,
-      sorts: [{ property: "Name", direction: "ascending" }],
+      sorts: [{ property: "Name"}],
     });
     
     const members = response.results.map((page) => ({
