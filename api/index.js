@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import { Client } from "@notionhq/client";
+
+const { Client } = await import("@notionhq/client");
 
 dotenv.config();
 
