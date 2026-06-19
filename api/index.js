@@ -1,8 +1,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-
-const { Client } = await import("@notionhq/client");
+import { Client } from "@notionhq/client";
 
 dotenv.config();
 
@@ -19,7 +18,7 @@ if (!process.env.NOTION_API_KEY || !process.env.MEMBERS_DB_ID) {
 // GET /api/members
 app.get("/api/members", async (req, res) => {
   try {
-    const response = await notion.databases.query({
+    const response = await notion.databases.retrieve({
       database_id: process.env.MEMBERS_DB_ID,
       sorts: [{ property: "Name", direction: "ascending" }],
     });
@@ -29,6 +28,7 @@ app.get("/api/members", async (req, res) => {
     }));
     res.json(members);
   } catch (error) {
+    console.log(notion);
     console.error("Error fetching members:", error);
     //res.status(500).json({ error: "Failed to fetch members" });
     res.status(500).json({ 
