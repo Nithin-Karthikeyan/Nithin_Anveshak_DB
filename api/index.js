@@ -47,7 +47,7 @@ app.post("/api/create-bill", async (req, res) => {
 
   try {
     const response = await notion.pages.create({
-      parent: { database_id: process.env.BILLS_DB_ID },
+      parent: { database_id: process.env.NOTION_DB_BILLS_ID },
       properties,
     });
     res.json({ billId: response.id });
