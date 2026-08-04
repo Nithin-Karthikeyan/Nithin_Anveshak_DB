@@ -23,6 +23,19 @@ export default function TabNavigation({ activeTab, setActiveTab }) {
           <img src={teamLogo} alt="Team Anveshak" className="nav-logo-img" />
           Anveshak DB
         </h1>
+
+        <div className={`tabs-container ${menuOpen ? "open" : ""}`}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => handleTabClick(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         <button 
           className={`hamburger ${menuOpen ? "open" : ""}`}
           onClick={() => setMenuOpen(!menuOpen)}
@@ -32,18 +45,6 @@ export default function TabNavigation({ activeTab, setActiveTab }) {
           <span></span>
           <span></span>
         </button>
-      </div>
-
-      <div className={`tabs-container ${menuOpen ? "open" : ""}`}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => handleTabClick(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
       </div>
     </nav>
   );

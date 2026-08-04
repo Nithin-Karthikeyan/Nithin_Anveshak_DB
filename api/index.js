@@ -28,7 +28,7 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    methods: ["GET", "POST"], // Only these V 
+    methods: ["GET", "POST"], // Only these V
   })
 );
 app.use(express.json());
