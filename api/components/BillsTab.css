@@ -15,6 +15,20 @@
   margin-bottom: 2rem;
 }
 
+.bill-upload-section {
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.bill-upload-section h3 {
+  color: var(--accent-silver);
+  margin-bottom: 1.5rem;
+}
+
 .bill-details-section {
   background: var(--surface);
   backdrop-filter: blur(10px);

@@ -19,6 +19,16 @@
   color: var(--accent);
   text-shadow: 0 0 20px var(--accent-glow);
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-logo-img {
+  height: 3.5rem;
+  width: auto;
+  border-radius: 6px;
+  display: block;
 }
 
 .hamburger {

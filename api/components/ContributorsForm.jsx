@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import "./ContributorsForm.css";
 
 export default function ContributorsForm({ 
@@ -7,20 +6,15 @@ export default function ContributorsForm({
   members, 
   totalAmount 
 }) {
-  const [sumError, setSumError] = useState("");
+  const sum = contributors.reduce((acc, c) => {
+    const amount = parseFloat(c.amount) || 0;
+    return acc + amount;
+  }, 0);
 
-  useEffect(() => {
-    const sum = contributors.reduce((acc, c) => {
-      const amount = parseFloat(c.amount) || 0;
-      return acc + amount;
-    }, 0);
-
-    if (totalAmount && sum > 0 && Math.abs(sum - parseFloat(totalAmount)) > 0.01) {
-      setSumError(`Contributors sum (₹${sum.toFixed(2)}) doesn't match total amount (₹${parseFloat(totalAmount).toFixed(2)})`);
-    } else {
-      setSumError("");
-    }
-  }, [contributors, totalAmount]);
+  const sumError =
+    totalAmount && sum > 0 && Math.abs(sum - parseFloat(totalAmount)) > 0.01
+      ? `Contributors sum (₹${sum.toFixed(2)}) doesn't match total amount (₹${parseFloat(totalAmount).toFixed(2)})`
+      : "";
 
   const addContributor = () => {
     setContributors([...contributors, { name: "", amount: "" }]);

@@ -8,7 +8,26 @@ dotenv.config();
 const app = express();
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
-app.use(cors({ origin: process.env.FRONTEND_URL, methods: ["GET", "POST"] }));
+const allowedOrigins = [
+  "https://anveshak-db.vercel.app",
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.startsWith("http://localhost")
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST"],
+  })
+);
 app.use(express.json());
 
 if (!process.env.NOTION_API_KEY || !process.env.MEMBERS_DB_ID) {

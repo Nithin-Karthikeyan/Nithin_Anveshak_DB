@@ -7,7 +7,7 @@ export default function FileDropZone({ file, setFile, preview, setPreview }) {
   const inputRef = useRef(null);
 
   const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "application/pdf"];
-  const MAX_SIZE = 10 * 1024 * 1024;
+  const MAX_SIZE = 3 * 1024 * 1024;
 
   const validateFile = (selectedFile) => {
     setError("");
@@ -18,7 +18,7 @@ export default function FileDropZone({ file, setFile, preview, setPreview }) {
     }
 
     if (selectedFile.size > MAX_SIZE) {
-      setError("File must be under 10MB");
+      setError("File must be under 3MB");
       return false;
     }
 
@@ -37,7 +37,11 @@ export default function FileDropZone({ file, setFile, preview, setPreview }) {
     setFile(selectedFile);
 
     if (selectedFile.type === "application/pdf") {
-      setPreview({ type: "pdf", name: selectedFile.name });
+      setPreview({
+        type: "pdf",
+        name: selectedFile.name,
+        url: URL.createObjectURL(selectedFile),
+      });
     } else {
       setPreview({ type: "image", url: URL.createObjectURL(selectedFile) });
     }
@@ -104,7 +108,7 @@ export default function FileDropZone({ file, setFile, preview, setPreview }) {
           <div className="drop-zone-icon">📄</div>
           <div className="drop-zone-text">
             <p className="drop-zone-main">Drag & Drop or Click to Upload</p>
-            <p className="drop-zone-sub">PDF, JPG, PNG (Max 10MB)</p>
+            <p className="drop-zone-sub">PDF, JPG, PNG (Max 3MB)</p>
           </div>
         </div>
       ) : (
@@ -114,8 +118,12 @@ export default function FileDropZone({ file, setFile, preview, setPreview }) {
               <img src={preview.url} alt="Preview" className="preview-image" />
             ) : (
               <div className="pdf-preview">
-                <div className="pdf-icon">📑</div>
-                <p className="pdf-name">{preview?.name}</p>
+                <div className="pdf-name">{preview?.name}</div>
+                <iframe
+                  src={preview?.url}
+                  title="PDF Preview"
+                  className="preview-pdf"
+                />
               </div>
             )}
           </div>

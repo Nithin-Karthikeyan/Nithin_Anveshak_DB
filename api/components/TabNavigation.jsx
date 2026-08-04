@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./TabNavigation.css";
+import teamLogo from "../assets/TeamAnveshakLogo.png";
 
 export default function TabNavigation({ activeTab, setActiveTab }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -18,7 +19,10 @@ export default function TabNavigation({ activeTab, setActiveTab }) {
   return (
     <nav className="tab-navigation">
       <div className="nav-header">
-        <h1 className="nav-logo">Anveshak DB</h1>
+        <h1 className="nav-logo">
+          <img src={teamLogo} alt="Team Anveshak" className="nav-logo-img" />
+          Anveshak DB
+        </h1>
         <button 
           className={`hamburger ${menuOpen ? "open" : ""}`}
           onClick={() => setMenuOpen(!menuOpen)}

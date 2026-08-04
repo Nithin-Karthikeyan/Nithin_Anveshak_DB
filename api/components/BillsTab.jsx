@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import FileDropZone from "./FileDropZone";
 import ContributorsForm from "./ContributorsForm";
+import DatePicker from "./DatePicker";
 import "./BillsTab.css";
 
 export default function BillsTab() {
@@ -192,13 +193,16 @@ export default function BillsTab() {
       <p className="tab-description">Fill in the details and upload your bill</p>
 
       <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-        <ContributorsForm
-          contributors={contributors}
-          setContributors={setContributors}
-          members={members}
-          totalAmount={totalAmount}
-        />
-        {errors.contributors && <div className="error-message">⚠️ {errors.contributors}</div>}
+        <div className="bill-upload-section">
+          <h3>Upload Bill</h3>
+          <FileDropZone
+            file={file}
+            setFile={setFile}
+            preview={preview}
+            setPreview={setPreview}
+          />
+          {errors.file && <div className="error-message">⚠️ {errors.file}</div>}
+        </div>
 
         <div className="bill-details-section">
           <h3>Bill Details</h3>
@@ -216,11 +220,7 @@ export default function BillsTab() {
 
           <div className="form-group">
             <label className="form-label">Date *</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
+            <DatePicker value={date} onChange={setDate} />
             <p className="hint-text">Put date as given in the invoice</p>
             {errors.date && <div className="error-message">⚠️ {errors.date}</div>}
           </div>
@@ -260,13 +260,13 @@ export default function BillsTab() {
           </div>
         </div>
 
-        <FileDropZone
-          file={file}
-          setFile={setFile}
-          preview={preview}
-          setPreview={setPreview}
+        <ContributorsForm
+          contributors={contributors}
+          setContributors={setContributors}
+          members={members}
+          totalAmount={totalAmount}
         />
-        {errors.file && <div className="error-message">⚠️ {errors.file}</div>}
+        {errors.contributors && <div className="error-message">⚠️ {errors.contributors}</div>}
 
         {errors.submit && <div className="error-message">⚠️ {errors.submit}</div>}
 

@@ -79,13 +79,8 @@
 .pdf-preview {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 1rem;
-  padding: 2rem;
-}
-
-.pdf-icon {
-  font-size: 4rem;
+  padding: 1rem;
 }
 
 .pdf-name {
@@ -93,6 +88,14 @@
   font-size: 0.95rem;
   word-break: break-all;
   text-align: center;
+}
+
+.preview-pdf {
+  width: 100%;
+  height: 480px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
 }
 
 .remove-file-btn {
