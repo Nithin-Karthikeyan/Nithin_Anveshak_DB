@@ -1,0 +1,134 @@
+.tab-navigation {
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+}
+
+.nav-logo {
+  font-size: 1.75rem;
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--accent-glow);
+  margin: 0;
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+}
+
+.hamburger span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background: var(--accent);
+  transition: all 0.3s ease;
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: translateY(9px) rotate(45deg);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-9px) rotate(-45deg);
+}
+
+.tabs-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0 2rem 1rem;
+}
+
+.tab-button {
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+
+.tab-button:hover {
+  color: var(--accent-silver);
+  background: rgba(238, 104, 41, 0.1);
+  transform: translateY(0);
+}
+
+.tab-button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+@media (max-width: 768px) {
+  .nav-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .nav-logo {
+    font-size: 1.5rem;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .tabs-container {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+  }
+
+  .tabs-container.open {
+    display: flex;
+  }
+
+  .tab-button {
+    width: 100%;
+    text-align: left;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent;
+  }
+
+  .tab-button.active {
+    border-bottom-color: var(--border);
+    border-left-color: var(--accent);
+    background: rgba(238, 104, 41, 0.1);
+  }
+
+  .tab-button:hover {
+    background: rgba(238, 104, 41, 0.15);
+  }
+}
