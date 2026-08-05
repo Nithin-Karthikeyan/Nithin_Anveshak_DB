@@ -16,6 +16,11 @@ export default function ContributorsForm({
       ? `Contributors sum (₹${sum.toFixed(2)}) doesn't match total amount (₹${parseFloat(totalAmount).toFixed(2)})`
       : "";
 
+  const remaining =
+    totalAmount !== "" && !isNaN(parseFloat(totalAmount))
+      ? parseFloat(totalAmount) - sum
+      : null;
+
   const addContributor = () => {
     setContributors([...contributors, { name: "", amount: "" }]);
   };
@@ -86,6 +91,26 @@ export default function ContributorsForm({
       <button type="button" onClick={addContributor} className="add-contributor-btn">
         + Add Contributor
       </button>
+
+      {remaining !== null && (
+        <div
+          className={`remaining-box ${
+            remaining < -0.01 ? "over" : remaining <= 0.01 ? "done" : ""
+          }`}
+        >
+          {remaining > 0.01 && (
+            <span>
+              Remaining: <strong>₹{remaining.toFixed(2)}</strong>
+            </span>
+          )}
+          {remaining >= -0.01 && remaining <= 0.01 && <span>All covered ✓</span>}
+          {remaining < -0.01 && (
+            <span>
+              Over by <strong>₹{Math.abs(remaining).toFixed(2)}</strong>
+            </span>
+          )}
+        </div>
+      )}
 
       {sumError && <div className="error-message">⚠️ {sumError}</div>}
     </div>

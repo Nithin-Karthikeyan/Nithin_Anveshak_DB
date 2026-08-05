@@ -1,10 +1,16 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./FileDropZone.css";
 
 export default function FileDropZone({ file, setFile, preview, setPreview }) {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (!file && inputRef.current) {
+      inputRef.current.value = "";
+    }
+  }, [file]);
 
   const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "application/pdf"];
   const MAX_SIZE = 3 * 1024 * 1024;

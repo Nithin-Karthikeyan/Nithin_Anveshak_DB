@@ -4,11 +4,13 @@ import ContributorsForm from "./ContributorsForm";
 import DatePicker from "./DatePicker";
 import "./BillsTab.css";
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 export default function BillsTab() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [date, setDate] = useState("");
@@ -21,10 +23,20 @@ export default function BillsTab() {
 
   const [errors, setErrors] = useState({});
 
+  const contributorsSum = contributors.reduce((acc, c) => {
+    const amount = parseFloat(c.amount) || 0;
+    return acc + amount;
+  }, 0);
+  const hasContributors = contributors.some(c => c.name && c.amount);
+  const liveContributorsMismatch =
+    hasContributors &&
+    totalAmount &&
+    Math.abs(contributorsSum - parseFloat(totalAmount)) > 0.01;
+
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const res = await fetch("https://anveshak-db.vercel.app/api/members");
+        const res = await fetch(`${API_BASE}/api/members`);
         const data = await res.json();
         setMembers(data);
       } catch (err) {
@@ -48,7 +60,8 @@ export default function BillsTab() {
     if (!date) {
       newErrors.date = "Date is required";
     } else {
-      const selectedDate = new Date(date);
+      const [y, m, d] = date.split("-").map(Number);
+      const selectedDate = new Date(y, m - 1, d);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       if (selectedDate > today) {
@@ -60,13 +73,7 @@ export default function BillsTab() {
       newErrors.totalAmount = "Total amount must be positive";
     }
 
-    const contributorsSum = contributors.reduce((acc, c) => {
-      const amount = parseFloat(c.amount) || 0;
-      return acc + amount;
-    }, 0);
-
-    const hasContributors = contributors.some(c => c.name && c.amount);
-    if (hasContributors && totalAmount && Math.abs(contributorsSum - parseFloat(totalAmount)) > 0.01) {
+    if (liveContributorsMismatch) {
       newErrors.contributors = "Contributors sum must match total amount";
     }
 
@@ -75,6 +82,7 @@ export default function BillsTab() {
   };
 
   const handleSubmit = async () => {
+    setSuccessMessage("");
     if (!validateForm()) {
       return;
     }
@@ -104,7 +112,7 @@ export default function BillsTab() {
       }
 
       const notionRes = await fetch(
-        "https://anveshak-db.vercel.app/api/create-bill",
+        `${API_BASE}/api/create-bill`,
         {
           method: "POST",
           headers: {
@@ -126,7 +134,7 @@ export default function BillsTab() {
       const hasValidContributors = contributors.some(c => c.name && c.amount);
       if (hasValidContributors) {
         const contributorsRes = await fetch(
-          "https://anveshak-db.vercel.app/api/add-contributors",
+          `${API_BASE}/api/add-contributors`,
           {
             method: "POST",
             headers: {
@@ -149,7 +157,8 @@ export default function BillsTab() {
         }
       }
 
-      setSubmitted(true);
+      resetForm();
+      setSuccessMessage("Bill submitted successfully! Your bill has been uploaded and processed.");
       console.log("Bill created:", notionData);
     } catch (err) {
       console.error(err);
@@ -168,29 +177,20 @@ export default function BillsTab() {
     setDescription("");
     setGst(false);
     setContributors([{ name: "", amount: "" }]);
-    setSubmitted(false);
     setErrors({});
   };
-
-  if (submitted) {
-    return (
-      <div className="bills-tab">
-        <div className="success-container">
-          <div className="success-icon">✓</div>
-          <h2>Bill Submitted Successfully!</h2>
-          <p className="success-message">Your bill has been uploaded and processed.</p>
-          <button onClick={resetForm} className="new-bill-btn">
-            Upload Another Bill
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bills-tab">
       <h2>Upload Bill</h2>
       <p className="tab-description">Fill in the details and upload your bill</p>
+
+      {successMessage && (
+        <div className="success-banner" role="status">
+          <span className="success-banner-icon">✓</span>
+          <span>{successMessage}</span>
+        </div>
+      )}
 
       <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         <div className="bill-upload-section">
@@ -272,7 +272,7 @@ export default function BillsTab() {
 
         <button 
           type="submit" 
-          disabled={uploading || !!errors.contributors} 
+          disabled={uploading || liveContributorsMismatch} 
           className="submit-btn"
         >
           {uploading ? "Uploading..." : "Submit Bill"}

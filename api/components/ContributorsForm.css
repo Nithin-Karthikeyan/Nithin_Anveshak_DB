@@ -64,6 +64,33 @@
   box-shadow: 0 0 15px var(--accent-glow);
 }
 
+.remaining-box {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.remaining-box strong {
+  color: var(--accent-silver);
+}
+
+.remaining-box.done {
+  color: var(--safe);
+  border-color: var(--safe);
+  background: rgba(0, 255, 157, 0.08);
+  text-shadow: 0 0 10px var(--safe-glow);
+}
+
+.remaining-box.over {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(255, 0, 51, 0.08);
+  text-shadow: 0 0 10px var(--danger-glow);
+}
+
 @media (max-width: 768px) {
   .contributor-inputs {
     grid-template-columns: 1fr;
