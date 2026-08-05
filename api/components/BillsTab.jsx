@@ -159,6 +159,7 @@ export default function BillsTab() {
 
       resetForm();
       setSuccessMessage("Bill submitted successfully! Your bill has been uploaded and processed.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       console.log("Bill created:", notionData);
     } catch (err) {
       console.error(err);
