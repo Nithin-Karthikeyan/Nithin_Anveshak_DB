@@ -664,6 +664,18 @@
     handleSubmit();
   });
 
+  // ---- Disable wheel-stepping on number inputs ----
+  document.addEventListener(
+    "wheel",
+    (e) => {
+      const t = e.target;
+      if (t instanceof HTMLInputElement && t.type === "number" && document.activeElement === t) {
+        e.preventDefault();
+      }
+    },
+    { passive: false }
+  );
+
   // ---- Init ----
   renderContributorsList();
   fetchMembers();
