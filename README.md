@@ -1,17 +1,72 @@
-# React + Vite
+# Anveshak DB
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A bill management web app. Upload a bill image, record invoice details, and split contributions among team members. Data is stored in Notion.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Frontend:** Plain HTML, CSS, JavaScript with [Tailwind CSS v4](https://tailwindcss.com) (standalone CLI, no Node needed)
+- **Backend:** [FastAPI](https://fastapi.dev) + [uvicorn](https://www.uvicorn.org) (Python)
+- **Data:** [Notion API](https://developers.notion.com/) via the official `notion-client` SDK
+- **Image hosting:** [Cloudinary](https://cloudinary.com) (uploaded directly from the browser)
+- **Tooling:** [uv](https://docs.astral.sh/uv/) for package management, [ruff](https://docs.astral.sh/ruff/) for linting & formatting, [Docker](https://www.docker.com) + Docker Compose, GitHub Actions CI
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Copy `.env.example` to `.env` and fill in the values:
 
-## Expanding the ESLint configuration
+   ```bash
+   cp .env.example .env
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# Anveshak_DB
+   Get an API key from [Notion integrations](https://developers.notion.com/) and share the relevant databases (Members, Bills, Contributions) with the integration. Set the 32-char database IDs from their URLs.
+
+2. Install dependencies (creates `.venv` and `uv.lock`):
+
+   ```bash
+   uv sync
+   ```
+
+3. Build the frontend CSS (downloads the Tailwind standalone binary into `.tools/`):
+
+   ```bash
+   bash scripts/build-css.sh
+   ```
+
+4. Run the app:
+
+   ```bash
+   uv run python main.py
+   ```
+
+   Open http://localhost:3000. Interactive API docs are at http://localhost:3000/docs.
+
+### Development
+
+- Watch CSS changes: `bash scripts/build-css.sh --watch`
+- Hot-reload the API: `uv run uvicorn main:app --port 3000 --reload`
+
+## Linting & formatting
+
+```bash
+uv run ruff check .     # lint
+uv run ruff format .    # format (use --check to verify only)
+```
+
+## Docker
+
+```bash
+docker compose up --build
+```
+
+## Project structure
+
+```
+main.py                 FastAPI app: API routes + static file serving
+static/
+  index.html            Frontend markup (mirrors the rendered UI)
+  css/input.css         Tailwind source (theme tokens + component styles)
+  css/app.css           Generated CSS (build output, not committed)
+  js/app.js             Vanilla JS: tabs, bill form, date picker, contributors
+scripts/build-css.sh    Builds the Tailwind CSS bundle
+.github/workflows/ci.yml  Lint, format-check, build CSS, build Docker image
+```

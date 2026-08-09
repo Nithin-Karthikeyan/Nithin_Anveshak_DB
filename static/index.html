@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anveshak DB</title>
+    <link rel="stylesheet" href="/css/app.css" />
+    <script src="/js/app.js" defer></script>
+  </head>
+  <body>
+    <div class="app">
+      <nav class="tab-navigation">
+        <div class="nav-header">
+          <h1 class="nav-logo">
+            <img src="/assets/TeamAnveshakLogo.png" alt="Team Anveshak" class="nav-logo-img" />
+            Anveshak DB
+          </h1>
+
+          <div class="tabs-container" id="tabs-container">
+            <button type="button" class="tab-button active" data-tab="bills">Bills</button>
+            <button type="button" class="tab-button" data-tab="pocs">Company PoCs</button>
+            <button type="button" class="tab-button" data-tab="about">About</button>
+          </div>
+
+          <button type="button" class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </nav>
+
+      <main class="main-content">
+        <section id="tab-bills" class="tab-panel">
+          <div class="bills-tab">
+            <h2>Upload Bill</h2>
+            <p class="tab-description">Fill in the details and upload your bill</p>
+
+            <div id="success-banner" class="success-banner hidden" role="status">
+              <span class="success-banner-icon">✓</span>
+              <span id="success-message"></span>
+            </div>
+
+            <form id="bill-form" novalidate>
+              <div class="bill-upload-section">
+                <h3>Upload Bill</h3>
+
+                <div class="file-drop-zone-container">
+                  <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png" hidden />
+
+                  <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone-icon">📄</div>
+                    <div class="drop-zone-text">
+                      <p class="drop-zone-main">Drag &amp; Drop or Click to Upload</p>
+                      <p class="drop-zone-sub">PDF, JPG, PNG (Max 3MB)</p>
+                    </div>
+                  </div>
+
+                  <div class="file-preview-container hidden" id="file-preview-container">
+                    <div class="file-preview" id="file-preview"></div>
+                    <button type="button" class="remove-file-btn" id="remove-file-btn">Remove File</button>
+                  </div>
+
+                  <div class="error-message hidden" id="file-error"></div>
+                </div>
+              </div>
+
+              <div class="bill-details-section">
+                <h3>Bill Details</h3>
+
+                <div class="form-group">
+                  <label class="form-label" for="invoice-number">Invoice Number *</label>
+                  <input type="text" id="invoice-number" placeholder="INV-2024-001" />
+                  <div class="error-message hidden" id="error-invoice"></div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Date *</label>
+                  <div class="date-picker" id="date-picker">
+                    <div class="date-input-wrap">
+                      <input type="date" id="bill-date" class="date-input" />
+                      <button type="button" class="calendar-toggle" id="calendar-toggle" aria-label="Open calendar">
+                        📅
+                      </button>
+                    </div>
+                    <div class="calendar-popup hidden" id="calendar-popup">
+                      <div class="calendar-header">
+                        <button type="button" class="calendar-nav" id="cal-prev">‹</button>
+                        <div class="calendar-month-label" id="cal-month"></div>
+                        <button type="button" class="calendar-nav" id="cal-next">›</button>
+                      </div>
+                      <div class="calendar-grid" id="cal-grid"></div>
+                    </div>
+                  </div>
+                  <p class="hint-text">Put date as given in the invoice</p>
+                  <div class="error-message hidden" id="error-date"></div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="total-amount">Total Amount (₹) *</label>
+                  <input type="number" id="total-amount" placeholder="1500.00" step="0.01" min="0" />
+                  <div class="error-message hidden" id="error-amount"></div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="description">Description</label>
+                  <input type="text" id="description" placeholder="CAC26 Elec Comps - Robu" />
+                </div>
+
+                <div class="form-group checkbox-group">
+                  <label>
+                    <input type="checkbox" id="gst" />
+                    <span class="checkbox-label">GST Included</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="contributors-form">
+                <h3>Contributors</h3>
+                <p class="hint-text">Add people who contributed to this bill (optional)</p>
+
+                <div class="contributors-list" id="contributors-list"></div>
+
+                <button type="button" class="add-contributor-btn" id="add-contributor-btn">
+                  + Add Contributor
+                </button>
+
+                <div class="remaining-box hidden" id="remaining-box"></div>
+                <div class="error-message hidden" id="error-contributors"></div>
+              </div>
+
+              <div class="error-message hidden" id="error-submit"></div>
+
+              <button type="submit" class="submit-btn" id="submit-btn">Submit Bill</button>
+            </form>
+          </div>
+        </section>
+
+        <section id="tab-pocs" class="tab-panel hidden">
+          <div class="placeholder-tab">
+            <h2>Company PoCs</h2>
+            <p>Company Points of Contact section - Coming soon</p>
+          </div>
+        </section>
+
+        <section id="tab-about" class="tab-panel hidden">
+          <div class="placeholder-tab">
+            <h2>About</h2>
+            <p>About Anveshak - Coming soon</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
