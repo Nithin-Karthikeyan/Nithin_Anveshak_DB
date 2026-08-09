@@ -25,7 +25,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_origin_regex=r"^http://localhost(:\d+)?$",
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -168,7 +168,7 @@ def add_contributors(body: AddContributors):
             contribution = notion.pages.create(
                 parent={"database_id": os.getenv("NOTION_CONTRIBUTIONS_DB_ID")},
                 properties={
-                    "Bill": {"relation": [{"id": bill_page_id}]},
+                    "Bills": {"relation": [{"id": bill_page_id}]},
                     "Contributor": {"relation": [{"id": member_page_id}]},
                     "Amount": {"number": float(amount)},
                     "Serial No.": {"title": [{"text": {"content": name}}]},
@@ -180,6 +180,19 @@ def add_contributors(body: AddContributors):
         if errors:
             result["errors"] = errors
         return result
+    except Exception as error:
+        return JSONResponse(
+            status_code=500,
+            content={"error": getattr(error, "message", None) or str(error)},
+        )
+
+
+# Archive a bill page (used to roll back a submission when contributors fail)
+@app.delete("/api/bills/{bill_id}")
+def delete_bill(bill_id: str):
+    try:
+        notion.pages.update(page_id=bill_id, archived=True)
+        return {"success": True, "billId": bill_id}
     except Exception as error:
         return JSONResponse(
             status_code=500,

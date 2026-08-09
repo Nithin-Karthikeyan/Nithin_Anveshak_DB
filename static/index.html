@@ -46,6 +46,10 @@
               <div class="bill-upload-section">
                 <h3>Upload Bill</h3>
 
+                <div class="upload-warning" role="alert">
+                  ⚠️ Make sure the Bill name is the same as INVOICE name
+                </div>
+
                 <div class="file-drop-zone-container">
                   <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png" hidden />
 
@@ -118,7 +122,7 @@
 
               <div class="contributors-form">
                 <h3>Contributors</h3>
-                <p class="hint-text">Add people who contributed to this bill (optional)</p>
+                <p class="hint-text">Add yourself, then the people who contributed to this bill</p>
 
                 <div class="contributors-list" id="contributors-list"></div>
 
@@ -151,6 +155,18 @@
           </div>
         </section>
       </main>
+    </div>
+
+    <div class="modal-overlay hidden" id="confirm-modal">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+        <h2 id="confirm-modal-title">Confirm Bill Submission</h2>
+        <p class="modal-sub">Review the details before submitting</p>
+        <div class="modal-summary" id="modal-summary"></div>
+        <div class="modal-actions">
+          <button type="button" class="modal-cancel-btn" id="modal-cancel">Cancel</button>
+          <button type="button" class="modal-confirm-btn" id="modal-confirm">Confirm &amp; Submit</button>
+        </div>
+      </div>
     </div>
   </body>
 </html>

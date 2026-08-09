@@ -42,6 +42,11 @@
   const addContributorBtn = $("add-contributor-btn");
   const remainingBox = $("remaining-box");
 
+  const confirmModal = $("confirm-modal");
+  const modalSummary = $("modal-summary");
+  const modalCancel = $("modal-cancel");
+  const modalConfirm = $("modal-confirm");
+
   // ---- Date picker ----
   const datePicker = $("date-picker");
   const calendarToggle = $("calendar-toggle");
@@ -183,6 +188,7 @@
     amount.placeholder = "Amount (₹)";
     amount.step = "0.01";
     amount.min = "0";
+    amount.value = contributors[index].amount || "";
     amount.addEventListener("input", (e) => {
       contributors[index].amount = e.target.value;
       updateContributorSummary();
@@ -550,6 +556,12 @@
       valid = false;
     }
 
+    if (!hasValidContributors()) {
+      errorContributors.textContent = "⚠️ Add at least one contributor with a name and amount";
+      errorContributors.classList.remove("hidden");
+      valid = false;
+    }
+
     return valid;
   }
 
@@ -585,6 +597,7 @@
 
   async function handleSubmit() {
     successBanner.classList.add("hidden");
+    errorSubmit.classList.add("hidden");
     if (!validateForm()) return;
 
     uploading = true;
@@ -625,22 +638,49 @@
       });
 
       const notionData = await notionRes.json();
+      if (!notionRes.ok) {
+        console.error("Failed to create bill:", notionData);
+        errorSubmit.textContent = `⚠️ Failed to create the bill. Bill was not published: ${
+          notionData.error || notionData.details || "unknown error"
+        }`;
+        errorSubmit.classList.remove("hidden");
+        uploading = false;
+        updateSubmitState();
+        return;
+      }
 
-      if (hasValidContributors()) {
-        const contributorsRes = await fetch("/api/add-contributors", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            invoice_number: invoiceNumber,
-            contributors: contributors
-              .filter((c) => c.name && c.amount)
-              .map((c) => ({ name: c.name, amount: Number(c.amount) })),
-          }),
-        });
+      const contributorsRes = await fetch("/api/add-contributors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoice_number: invoiceNumber,
+          contributors: contributors
+            .filter((c) => c.name && c.amount)
+            .map((c) => ({ name: c.name, amount: Number(c.amount) })),
+        }),
+      });
 
-        if (!contributorsRes.ok) {
-          console.error("Failed to add contributors");
+      const contributorsData = await contributorsRes.json();
+      const contributorErrors = contributorsData.errors || [];
+
+      if (!contributorsRes.ok || contributorErrors.length > 0) {
+        console.error("Failed to add contributors:", contributorsData);
+        try {
+          await fetch(`/api/bills/${notionData.billId}`, { method: "DELETE" });
+        } catch (rollbackErr) {
+          console.error("Rollback failed:", rollbackErr);
         }
+        const reason =
+          (contributorErrors.length > 0
+            ? contributorErrors
+                .map((e) => `${e.name || "?"}: ${e.reason}`)
+                .join("; ")
+            : contributorsData.error) || "unknown error";
+        errorSubmit.textContent = `⚠️ Failed to add contributors. Bill was not published: ${reason}`;
+        errorSubmit.classList.remove("hidden");
+        uploading = false;
+        updateSubmitState();
+        return;
       }
 
       resetForm();
@@ -661,6 +701,99 @@
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    openConfirmModal();
+  });
+
+  form.addEventListener("keydown", (e) => {
+    if (
+      e.key === "Enter" &&
+      (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement)
+    ) {
+      e.preventDefault();
+    }
+  });
+
+  // ---- Confirmation modal ----
+  function buildModalSummary() {
+    modalSummary.innerHTML = "";
+
+    const rows = [
+      ["Bill File", file ? `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)` : "None"],
+      ["Invoice Number", invoiceNumber],
+      ["Date", date],
+      ["Total Amount", `₹${Number(totalAmount).toFixed(2)}`],
+      ["Description", description || "—"],
+      ["GST Included", gst ? "Yes" : "No"],
+    ];
+
+    rows.forEach(([label, value]) => {
+      const row = document.createElement("div");
+      row.className = "modal-row";
+      const lbl = document.createElement("span");
+      lbl.className = "modal-row-label";
+      lbl.textContent = label;
+      const val = document.createElement("span");
+      val.className = "modal-row-value";
+      val.textContent = value;
+      row.appendChild(lbl);
+      row.appendChild(val);
+      modalSummary.appendChild(row);
+    });
+
+    const heading = document.createElement("div");
+    heading.className = "modal-row modal-row-heading";
+    heading.textContent = "Contributors";
+    modalSummary.appendChild(heading);
+
+    contributors
+      .filter((c) => c.name && c.amount)
+      .forEach((c) => {
+        const row = document.createElement("div");
+        row.className = "modal-row modal-contributor";
+        const lbl = document.createElement("span");
+        lbl.className = "modal-row-label";
+        lbl.textContent = c.name;
+        const val = document.createElement("span");
+        val.className = "modal-row-value";
+        val.textContent = `₹${Number(c.amount).toFixed(2)}`;
+        row.appendChild(lbl);
+        row.appendChild(val);
+        modalSummary.appendChild(row);
+      });
+
+    const sum = contributorsSum();
+    const total = Number(totalAmount) || 0;
+    const remaining = total - sum;
+
+    const remRow = document.createElement("div");
+    remRow.className = "modal-row modal-remaining";
+    remRow.textContent =
+      remaining > 0.01
+        ? `Remaining: ₹${remaining.toFixed(2)}`
+        : remaining < -0.01
+          ? `Over by ₹${Math.abs(remaining).toFixed(2)}`
+          : "All covered ✓";
+    modalSummary.appendChild(remRow);
+  }
+
+  function openConfirmModal() {
+    buildModalSummary();
+    confirmModal.classList.remove("hidden");
+  }
+
+  function closeConfirmModal() {
+    confirmModal.classList.add("hidden");
+  }
+
+  modalCancel.addEventListener("click", closeConfirmModal);
+
+  confirmModal.addEventListener("click", (e) => {
+    if (e.target === confirmModal) closeConfirmModal();
+  });
+
+  modalConfirm.addEventListener("click", () => {
+    closeConfirmModal();
     handleSubmit();
   });
 
