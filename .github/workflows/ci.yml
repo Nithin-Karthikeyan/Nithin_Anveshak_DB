@@ -1,17 +1,17 @@
 name: CI
 
-on:
-  push:
+on: 
+  push: # On push execute actions on main
     branches: [main]
   pull_request:
 
-jobs:
-  lint-and-build:
-    runs-on: ubuntu-latest
+jobs: # All the jobs the CI pipeline shud run
+  lint-and-build: # One of the jobs in CI pipeline. Used to check linting, formatting, and dependencies
+    runs-on: ubuntu-latest # VM to run the job on in github
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4 # Creates a runner for the CI pipeline, and clones the repo inside the runner (VM)
 
-      - uses: astral-sh/setup-uv@v9.0.0
+      - uses: astral-sh/setup-uv@v9.0.0 # Setup uv in the VM
         with:
           python-version: "3.10"
 
@@ -24,7 +24,7 @@ jobs:
       - name: Format check (ruff format)
         run: uv run ruff format --check .
 
-      - name: Run tests (pytest)
+      - name: Run tests (pytest) # Run pytests to catch errors before merging with main
         run: uv run pytest
 
       - name: Build Docker image
