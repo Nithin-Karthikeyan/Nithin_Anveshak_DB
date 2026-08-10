@@ -161,6 +161,10 @@ def add_contributors(body: AddContributors):
                 errors.append({"name": name, "reason": "Missing name or amount"})
                 continue
 
+            if amount <= 0:
+                errors.append({"name": name, "reason": "Amount must be greater than 0"})
+                continue
+
             member_query = query_database(
                 os.getenv("MEMBERS_DB_ID"),
                 filter={"property": "Name", "title": {"equals": name}},
