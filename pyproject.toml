@@ -9,12 +9,19 @@ dependencies = [
     "uvicorn[standard]",
     "notion-client",
     "python-dotenv",
+    "pytest>=9.1.1",
+    "httpx>=0.28.1",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx",
+    "pytest",
     "ruff",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100

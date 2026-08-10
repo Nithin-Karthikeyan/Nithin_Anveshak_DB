@@ -12,8 +12,10 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-app = FastAPI(title="Anveshak DB API") # Create instance of the object
-notion = Client(auth=os.getenv("NOTION_API_KEY"), notion_version="2022-06-28") # Create instance of notion client to communicate with notion db
+app = FastAPI(title="Anveshak DB API")  # Create instance of the object
+notion = Client(
+    auth=os.getenv("NOTION_API_KEY"), notion_version="2022-06-28"
+)  # Create instance of notion client to communicate with notion db
 
 
 # Allow only these URLs to communicate with the backend. Block the rest using CORS
@@ -37,20 +39,22 @@ if not os.getenv("NOTION_API_KEY") or not os.getenv("MEMBERS_DB_ID"):
 # Body for POST /api/create-bill . Sets the types so that pydantic can handle client side mismatches
 # All the fields are REQUIRED except description and gst
 class CreateBill(BaseModel):
-    image_url: str 
-    invoice_number: str 
+    image_url: str
+    invoice_number: str
     date: str
     total_amount: float
-    description: str | None = None # Can be left blank
-    gst: bool = False # Accepts bool, Default is False
+    description: str | None = None  # Can be left blank
+    gst: bool = False  # Accepts bool, Default is False
+
 
 class Contributor(BaseModel):
     name: str | None = None
     amount: float | None = None
 
+
 # Body for POST /api/add-contributors
 class AddContributors(BaseModel):
-    invoice_number: str 
+    invoice_number: str
     contributors: list[Contributor]
 
 
@@ -82,7 +86,7 @@ def get_members():
 
 # POST the bill to notion Bills db
 @app.post("/api/create-bill")
-def create_bill(body: CreateBill): # Enforce that body is of type CreateBill class
+def create_bill(body: CreateBill):  # Enforce that body is of type CreateBill class
 
     # Establish that type of properties is a dict with key as str, and value as Any (Any type)
     properties: dict[str, Any] = {
@@ -98,7 +102,7 @@ def create_bill(body: CreateBill): # Enforce that body is of type CreateBill cla
         "GST": {"checkbox": bool(body.gst)},
     }
 
-    # Check if the fields are not None before POSTING to Notion 
+    # Check if the fields are not None before POSTING to Notion
     if body.image_url:
         properties["Link"] = {"url": body.image_url}
     if body.date:
@@ -123,16 +127,17 @@ def create_bill(body: CreateBill): # Enforce that body is of type CreateBill cla
             },
         )
 
+
 # POST the contributors to 'Contributors' DB
 @app.post("/api/add-contributors")
 def add_contributors(body: AddContributors):
-    if not body.invoice_number or not body.contributors: 
+    if not body.invoice_number or not body.contributors:
         return JSONResponse(
             status_code=400,
             content={"error": "invoice_number and contributors[] are required"},
         )
 
-    try: # Try to get the bill with that invoice number from Bills DB
+    try:  # Try to get the bill with that invoice number from Bills DB
         bills_query = query_database(
             os.getenv("NOTION_DB_BILLS_ID"),
             filter={"property": "Invoice No.", "title": {"equals": body.invoice_number}},

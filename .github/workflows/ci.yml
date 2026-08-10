@@ -27,5 +27,8 @@ jobs:
       - name: Build Tailwind CSS
         run: bash scripts/build-css.sh
 
+      - name: Run tests (pytest)
+        run: uv run pytest
+
       - name: Build Docker image
         run: docker build .

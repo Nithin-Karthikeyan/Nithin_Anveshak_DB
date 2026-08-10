@@ -52,6 +52,21 @@ uv run ruff check .     # lint
 uv run ruff format .    # format (use --check to verify only)
 ```
 
+## Tests
+
+API-level tests use FastAPI's `TestClient` with the Notion client mocked, so no
+real keys or network access are needed. They replay the exact requests the
+frontend makes (members, create-bill, add-contributors, rollback), including
+error paths.
+
+```bash
+bash scripts/build-css.sh   # needed for the static-serving test (app.css)
+uv run pytest
+```
+
+> If your shell has ROS sourced (a `PYTHONPATH` with pytest plugins), run
+> `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run pytest` instead.
+
 ## Docker
 
 ```bash
@@ -68,5 +83,6 @@ static/
   css/app.css           Generated CSS (build output, not committed)
   js/app.js             Vanilla JS: tabs, bill form, date picker, contributors
 scripts/build-css.sh    Builds the Tailwind CSS bundle
-.github/workflows/ci.yml  Lint, format-check, build CSS, build Docker image
+tests/                  pytest API tests (TestClient + mocked Notion)
+.github/workflows/ci.yml  Lint, format-check, build CSS, run pytest, build Docker image
 ```
