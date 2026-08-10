@@ -256,7 +256,12 @@
       remainingBox.innerHTML = "";
     }
 
-    if (hasTotal && sum > 0 && Math.abs(sum - total) > 0.01) {
+    const invalidAmount = contributors.some((c) => c.name && parseFloat(c.amount) <= 0);
+
+    if (invalidAmount) {
+      errorContributors.textContent = "⚠️ Contributor amounts must be greater than 0";
+      errorContributors.classList.remove("hidden");
+    } else if (hasTotal && sum > 0 && Math.abs(sum - total) > 0.01) {
       errorContributors.textContent =
         `⚠️ Contributors sum (₹${sum.toFixed(2)}) doesn't match total amount (₹${total.toFixed(2)})`;
       errorContributors.classList.remove("hidden");
