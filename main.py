@@ -19,7 +19,7 @@ notion = Client(
 
 
 # Allow only these URLs to communicate with the backend. Block the rest using CORS
-allowed_origins = ["https://anveshak-db.vercel.app"]
+allowed_origins = ["https://nithin-anveshak-db.vercel.app"]
 if frontend_url := os.getenv("FRONTEND_URL"):
     allowed_origins.append(frontend_url)
 
