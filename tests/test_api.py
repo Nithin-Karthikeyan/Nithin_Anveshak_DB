@@ -182,6 +182,44 @@ def test_add_contributors_missing_name_or_amount(client, fake_notion):
     assert data["errors"] == [{"name": "", "reason": "Missing name or amount"}]
 
 
+def test_add_contributors_zero_amount(client, fake_notion):
+    fake_notion.bill_pages = [bill_page("bill-abc", "INV-2024-001")]
+
+    res = client.post(
+        "/api/add-contributors",
+        json={
+            "invoice_number": "INV-2024-001",
+            "contributors": [{"name": "Alice", "amount": 0}],
+        },
+    )
+
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["created"] == []
+    assert data["errors"] == [{"name": "Alice", "reason": "Amount must be greater than 0"}]
+    assert fake_notion.calls["create"] == []
+
+
+def test_add_contributors_negative_amount(client, fake_notion):
+    fake_notion.bill_pages = [bill_page("bill-abc", "INV-2024-001")]
+
+    res = client.post(
+        "/api/add-contributors",
+        json={
+            "invoice_number": "INV-2024-001",
+            "contributors": [{"name": "Alice", "amount": -5}],
+        },
+    )
+
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["created"] == []
+    assert data["errors"] == [{"name": "Alice", "reason": "Amount must be greater than 0"}]
+    assert fake_notion.calls["create"] == []
+
+
 def test_add_contributors_member_not_found(client, fake_notion):
     fake_notion.bill_pages = [bill_page("bill-abc", "INV-2024-001")]
 

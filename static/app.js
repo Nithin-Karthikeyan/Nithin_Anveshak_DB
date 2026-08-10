@@ -141,7 +141,7 @@
   }
 
   function hasValidContributors() {
-    return contributors.some((c) => c.name && c.amount);
+    return contributors.some((c) => c.name && parseFloat(c.amount) > 0);
   }
 
   function liveMismatch() {
@@ -187,7 +187,7 @@
     amount.className = "contributor-amount";
     amount.placeholder = "Amount (₹)";
     amount.step = "0.01";
-    amount.min = "0";
+    amount.min = "0.01";
     amount.value = contributors[index].amount || "";
     amount.addEventListener("input", (e) => {
       contributors[index].amount = e.target.value;
@@ -268,7 +268,16 @@
   }
 
   function updateSubmitState() {
-    submitBtn.disabled = uploading || liveMismatch();
+    submitBtn.disabled =
+      uploading ||
+      !file ||
+      !invoiceNumber.trim() ||
+      !date ||
+      !totalAmount ||
+      parseFloat(totalAmount) <= 0 ||
+      !hasValidContributors() ||
+      contributors.some((c) => c.name && parseFloat(c.amount) <= 0) ||
+      liveMismatch();
     submitBtn.textContent = uploading ? "Uploading..." : "Submit Bill";
   }
 
@@ -327,6 +336,7 @@
       file = null;
       preview = null;
       showFilePreview(false);
+      updateSubmitState();
       return;
     }
     file = selected;
@@ -336,6 +346,7 @@
       preview = { type: "image", url: URL.createObjectURL(selected) };
     }
     showFilePreview(true);
+    updateSubmitState();
   }
 
   ["dragenter", "dragover"].forEach((type) => {
@@ -373,6 +384,7 @@
     fileInput.value = "";
     fileError.classList.add("hidden");
     showFilePreview(false);
+    updateSubmitState();
   });
 
   // ---- Date picker ----
@@ -490,11 +502,13 @@
       return;
     }
     setDate(e.target.value);
+    updateSubmitState();
   });
 
   // ---- Bill details ----
   invoiceNumberInput.addEventListener("input", (e) => {
     invoiceNumber = e.target.value;
+    updateSubmitState();
   });
 
   totalAmountInput.addEventListener("input", (e) => {
@@ -560,6 +574,19 @@
       errorContributors.textContent = "⚠️ Add at least one contributor with a name and amount";
       errorContributors.classList.remove("hidden");
       valid = false;
+    } else {
+      if (contributors.some((c) => c.name && parseFloat(c.amount) <= 0)) {
+        errorContributors.textContent = "⚠️ Contributor amounts must be greater than 0";
+        errorContributors.classList.remove("hidden");
+        valid = false;
+      } else if (
+        totalAmount &&
+        Math.abs(contributorsSum() - parseFloat(totalAmount)) > 0.01
+      ) {
+        errorContributors.textContent = "⚠️ Contributors sum doesn't match total amount";
+        errorContributors.classList.remove("hidden");
+        valid = false;
+      }
     }
 
     return valid;
@@ -655,7 +682,7 @@
         body: JSON.stringify({
           invoice_number: invoiceNumber,
           contributors: contributors
-            .filter((c) => c.name && c.amount)
+            .filter((c) => c.name && parseFloat(c.amount) > 0)
             .map((c) => ({ name: c.name, amount: Number(c.amount) })),
         }),
       });
@@ -747,7 +774,7 @@
     modalSummary.appendChild(heading);
 
     contributors
-      .filter((c) => c.name && c.amount)
+      .filter((c) => c.name && parseFloat(c.amount) > 0)
       .forEach((c) => {
         const row = document.createElement("div");
         row.className = "modal-row modal-contributor";
