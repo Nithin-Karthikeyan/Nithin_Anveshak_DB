@@ -4,7 +4,7 @@ A bill management web app. Upload a bill image, record invoice details, and spli
 
 ## Stack
 
-- **Frontend:** Plain HTML, CSS, JavaScript with [Tailwind CSS v4](https://tailwindcss.com) (standalone CLI, no Node needed)
+- **Frontend:** Plain HTML, CSS, JavaScript (vanilla, no build step)
 - **Backend:** [FastAPI](https://fastapi.dev) + [uvicorn](https://www.uvicorn.org) (Python)
 - **Data:** [Notion API](https://developers.notion.com/) via the official `notion-client` SDK
 - **Image hosting:** [Cloudinary](https://cloudinary.com) (uploaded directly from the browser)
@@ -26,13 +26,7 @@ A bill management web app. Upload a bill image, record invoice details, and spli
    uv sync
    ```
 
-3. Build the frontend CSS (downloads the Tailwind standalone binary into `.tools/`):
-
-   ```bash
-   bash scripts/build-css.sh
-   ```
-
-4. Run the app:
+3. Run the app:
 
    ```bash
    uv run python main.py
@@ -42,7 +36,6 @@ A bill management web app. Upload a bill image, record invoice details, and spli
 
 ### Development
 
-- Watch CSS changes: `bash scripts/build-css.sh --watch`
 - Hot-reload the API: `uv run uvicorn main:app --port 3000 --reload`
 
 ## Linting & formatting
@@ -60,7 +53,6 @@ frontend makes (members, create-bill, add-contributors, rollback), including
 error paths.
 
 ```bash
-bash scripts/build-css.sh   # needed for the static-serving test (app.css)
 uv run pytest
 ```
 
@@ -79,10 +71,9 @@ docker compose up --build
 main.py                 FastAPI app: API routes + static file serving
 static/
   index.html            Frontend markup (mirrors the rendered UI)
-  css/input.css         Tailwind source (theme tokens + component styles)
-  css/app.css           Generated CSS (build output, not committed)
-  js/app.js             Vanilla JS: tabs, bill form, date picker, contributors
-scripts/build-css.sh    Builds the Tailwind CSS bundle
+  app.css               Plain CSS (theme tokens + component styles)
+  app.js                Vanilla JS: tabs, bill form, date picker, contributors
+  assets/               Favicon + logo images
 tests/                  pytest API tests (TestClient + mocked Notion)
-.github/workflows/ci.yml  Lint, format-check, build CSS, run pytest, build Docker image
+.github/workflows/ci.yml  Lint, format-check, run pytest, build Docker image
 ```

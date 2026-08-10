@@ -5,12 +5,6 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 
-# Tooling caches
-.tools/
-
-# Generated frontend assets
-static/css/app.css
-
 # Env files
 .env
 .vercel

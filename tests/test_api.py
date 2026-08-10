@@ -1,24 +1,21 @@
-from pathlib import Path
-
-import pytest
-
 from conftest import BILLS_DB_ID, CONTRIBUTIONS_DB_ID, FakeNotionError, bill_page, member_page
-
-APP_CSS = Path(__file__).resolve().parent.parent / "static" / "css" / "app.css"
 
 
 # ---- GET /api/members ----
 
 
+# client and fake_notion args are passed from fixtures defined in conftest.py
+# client is a TestClient from FastAPI
 def test_members_success(client, fake_notion):
+    # Creats a fake notion page with member id and names
     fake_notion.member_pages = [
         member_page("mem-1", "Alice"),
         member_page("mem-2", "Bob"),
         {"id": "mem-3", "properties": {"Name": {"title": []}}},
     ]
-
+    # Sends a GET request
     res = client.get("/api/members")
-
+    # Assert that the get request is valid
     assert res.status_code == 200
     assert res.json() == [
         {"id": "mem-1", "name": "Alice"},
@@ -260,7 +257,7 @@ def test_delete_bill_notion_error(client, fake_notion):
     assert res.json() == {"error": "page not found"}
 
 
-# ---- Full submission flow (mirrors static/js/app.js handleSubmit) ----
+# ---- Full submission flow (mirrors static/app.js handleSubmit) ----
 
 
 def test_submission_flow_rollback_when_contributors_fail(client, fake_notion):
@@ -320,12 +317,8 @@ def test_index_served(client):
     assert "Anveshak DB" in res.text
 
 
-@pytest.mark.skipif(
-    not APP_CSS.exists(),
-    reason="app.css not built; run `bash scripts/build-css.sh` first",
-)
 def test_built_css_served(client):
-    res = client.get("/css/app.css")
+    res = client.get("/app.css")
 
     assert res.status_code == 200
     assert "text/css" in res.headers["content-type"]

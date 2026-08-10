@@ -24,9 +24,6 @@ jobs:
       - name: Format check (ruff format)
         run: uv run ruff format --check .
 
-      - name: Build Tailwind CSS
-        run: bash scripts/build-css.sh
-
       - name: Run tests (pytest)
         run: uv run pytest
 

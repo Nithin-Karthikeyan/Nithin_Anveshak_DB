@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
-@import "tailwindcss";
 
-@theme {
+:root {
   --bg: #030305;
   --surface: rgba(12, 14, 18, 0.65);
   --accent: #ee6829;
@@ -30,6 +29,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
   }
 
   body {
@@ -1072,5 +1077,11 @@
     .modal-actions {
       flex-direction: column-reverse;
     }
+  }
+}
+
+@layer utilities {
+  .hidden {
+    display: none;
   }
 }
