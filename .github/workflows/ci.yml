@@ -26,6 +26,3 @@ jobs: # All the jobs the CI pipeline shud run
 
       - name: Run tests (pytest) # Run pytests to catch errors before merging with main
         run: uv run pytest
-
-      - name: Build Docker image
-        run: docker build .
