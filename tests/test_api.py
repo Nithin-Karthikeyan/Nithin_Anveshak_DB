@@ -158,7 +158,7 @@ def test_add_contributors_success(client, fake_notion):
     assert len(create) == 1
     assert create[0]["parent"] == {"database_id": CONTRIBUTIONS_DB_ID}
     props = create[0]["properties"]
-    assert props["Bills"] == {"relation": [{"id": "bill-abc"}]}
+    assert props["Bill"] == {"relation": [{"id": "bill-abc"}]}
     assert props["Contributor"] == {"relation": [{"id": "mem-1"}]}
     assert props["Amount"] == {"number": 1500.0}
     assert props["Serial No."] == {"title": [{"text": {"content": "Alice"}}]}
