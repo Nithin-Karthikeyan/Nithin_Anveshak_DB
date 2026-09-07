@@ -1,4 +1,5 @@
 from conftest import BILLS_DB_ID, CONTRIBUTIONS_DB_ID, FakeNotionError, bill_page, member_page
+from notion_columns import BillsColumns, ContributorsColumns
 
 
 # ---- GET /api/members ----
@@ -58,12 +59,14 @@ def test_create_bill_success(client, fake_notion):
     assert len(create) == 1
     assert create[0]["parent"] == {"database_id": BILLS_DB_ID}
     props = create[0]["properties"]
-    assert props["Invoice No."] == {"title": [{"text": {"content": "INV-2024-001"}}]}
-    assert props["GST"] == {"checkbox": True}
-    assert props["Link"] == {"url": "https://img.example.com/bill.png"}
-    assert props["Date"] == {"date": {"start": "2024-01-15"}}
-    assert props["Total Amount"] == {"number": 1500.0}
-    assert props["Description"] == {"rich_text": [{"text": {"content": "CAC26 Elec Comps"}}]}
+    assert props[BillsColumns.INVOICE_NO] == {"title": [{"text": {"content": "INV-2024-001"}}]}
+    assert props[BillsColumns.GST] == {"checkbox": True}
+    assert props[BillsColumns.LINK] == {"url": "https://img.example.com/bill.png"}
+    assert props[BillsColumns.DATE] == {"date": {"start": "2024-01-15"}}
+    assert props[BillsColumns.TOTAL_AMOUNT] == {"number": 1500.0}
+    assert props[BillsColumns.DESCRIPTION] == {
+        "rich_text": [{"text": {"content": "CAC26 Elec Comps"}}]
+    }
 
 
 def test_create_bill_omits_optional_fields(client, fake_notion):
@@ -81,11 +84,11 @@ def test_create_bill_omits_optional_fields(client, fake_notion):
 
     assert res.status_code == 200
     props = fake_notion.calls["create"][0]["properties"]
-    assert props["GST"] == {"checkbox": False}
-    assert "Link" not in props
-    assert "Date" not in props
-    assert "Description" not in props
-    assert props["Total Amount"] == {"number": 0.0}
+    assert props[BillsColumns.GST] == {"checkbox": False}
+    assert BillsColumns.LINK not in props
+    assert BillsColumns.DATE not in props
+    assert BillsColumns.DESCRIPTION not in props
+    assert props[BillsColumns.TOTAL_AMOUNT] == {"number": 0.0}
 
 
 def test_create_bill_missing_required_fields(client, fake_notion):
@@ -158,10 +161,10 @@ def test_add_contributors_success(client, fake_notion):
     assert len(create) == 1
     assert create[0]["parent"] == {"database_id": CONTRIBUTIONS_DB_ID}
     props = create[0]["properties"]
-    assert props["Bill"] == {"relation": [{"id": "bill-abc"}]}
-    assert props["Contributor"] == {"relation": [{"id": "mem-1"}]}
-    assert props["Amount"] == {"number": 1500.0}
-    assert props["Serial No."] == {"title": [{"text": {"content": "Alice"}}]}
+    assert props[ContributorsColumns.BILL] == {"relation": [{"id": "bill-abc"}]}
+    assert props[ContributorsColumns.CONTRIBUTOR] == {"relation": [{"id": "mem-1"}]}
+    assert props[ContributorsColumns.AMOUNT] == {"number": 1500.0}
+    assert props[ContributorsColumns.SERIAL_NO] == {"title": [{"text": {"content": "Alice"}}]}
 
 
 def test_add_contributors_missing_name_or_amount(client, fake_notion):
