@@ -2,6 +2,8 @@ import os
 
 import pytest
 
+from notion_columns import BillsColumns, MembersColumns
+
 os.environ.setdefault("NOTION_API_KEY", "test-notion-key")
 os.environ.setdefault("MEMBERS_DB_ID", "members_db_id")
 os.environ.setdefault("NOTION_DB_BILLS_ID", "bills_db_id")
@@ -39,9 +41,9 @@ class FakeNotion:
         if self.error:
             raise self.error
         if MEMBERS_DB_ID in path:
-            return {"results": self._filter_pages(self.member_pages, body, "Name")}
+            return {"results": self._filter_pages(self.member_pages, body, MembersColumns.NAME)}
         if BILLS_DB_ID in path:
-            return {"results": self._filter_pages(self.bill_pages, body, "Invoice No.")}
+            return {"results": self._filter_pages(self.bill_pages, body, BillsColumns.INVOICE_NO)}
         return {"results": []}
 
     @staticmethod
@@ -76,14 +78,14 @@ class FakeNotion:
 def member_page(page_id, name):
     return {
         "id": page_id,
-        "properties": {"Name": {"title": [{"text": {"content": name}}]}},
+        "properties": {MembersColumns.NAME: {"title": [{"text": {"content": name}}]}},
     }
 
 
 def bill_page(page_id, invoice_no):
     return {
         "id": page_id,
-        "properties": {"Invoice No.": {"title": [{"text": {"content": invoice_no}}]}},
+        "properties": {BillsColumns.INVOICE_NO: {"title": [{"text": {"content": invoice_no}}]}},
     }
 
 

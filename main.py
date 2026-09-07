@@ -10,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 from notion_client import Client
 from pydantic import BaseModel
 
+from notion_columns import BillsColumns, ContributorsColumns, MembersColumns
+
 load_dotenv()
 
 app = FastAPI(title="Anveshak DB API")  # Create instance of the object
@@ -69,7 +71,7 @@ def get_members():
         response = query_database(os.getenv("MEMBERS_DB_ID"))
         members = []
         for page in response["results"]:
-            title = page["properties"]["Name"]["title"]
+            title = page["properties"][MembersColumns.NAME]["title"]
             name = (title[0]["text"].get("content") if title else None) or "Unnamed"
             members.append({"id": page["id"], "name": name})
         return members
@@ -90,7 +92,7 @@ def create_bill(body: CreateBill):  # Enforce that body is of type CreateBill cl
 
     # Establish that type of properties is a dict with key as str, and value as Any (Any type)
     properties: dict[str, Any] = {
-        "Invoice No.": {
+        BillsColumns.INVOICE_NO: {
             "title": [
                 {
                     "text": {
@@ -99,18 +101,20 @@ def create_bill(body: CreateBill):  # Enforce that body is of type CreateBill cl
                 }
             ],
         },
-        "GST": {"checkbox": bool(body.gst)},
+        BillsColumns.GST: {"checkbox": bool(body.gst)},
     }
 
     # Check if the fields are not None before POSTING to Notion
     if body.image_url:
-        properties["Link"] = {"url": body.image_url}
+        properties[BillsColumns.LINK] = {"url": body.image_url}
     if body.date:
-        properties["Date"] = {"date": {"start": body.date}}
+        properties[BillsColumns.DATE] = {"date": {"start": body.date}}
     if body.total_amount is not None:
-        properties["Total Amount"] = {"number": float(body.total_amount)}
+        properties[BillsColumns.TOTAL_AMOUNT] = {"number": float(body.total_amount)}
     if body.description:
-        properties["Description"] = {"rich_text": [{"text": {"content": body.description}}]}
+        properties[BillsColumns.DESCRIPTION] = {
+            "rich_text": [{"text": {"content": body.description}}]
+        }
 
     try:
         response = notion.pages.create(
@@ -140,7 +144,7 @@ def add_contributors(body: AddContributors):
     try:  # Try to get the bill with that invoice number from Bills DB
         bills_query = query_database(
             os.getenv("NOTION_DB_BILLS_ID"),
-            filter={"property": "Invoice No.", "title": {"equals": body.invoice_number}},
+            filter={"property": BillsColumns.INVOICE_NO, "title": {"equals": body.invoice_number}},
         )
         if not bills_query["results"]:
             return JSONResponse(
@@ -167,7 +171,7 @@ def add_contributors(body: AddContributors):
 
             member_query = query_database(
                 os.getenv("MEMBERS_DB_ID"),
-                filter={"property": "Name", "title": {"equals": name}},
+                filter={"property": MembersColumns.NAME, "title": {"equals": name}},
             )
             if not member_query["results"]:
                 errors.append({"name": name, "reason": f'Member "{name}" not found in Members DB'})
@@ -177,10 +181,10 @@ def add_contributors(body: AddContributors):
             contribution = notion.pages.create(
                 parent={"database_id": os.getenv("NOTION_CONTRIBUTIONS_DB_ID")},
                 properties={
-                    "Bill": {"relation": [{"id": bill_page_id}]},
-                    "Contributor": {"relation": [{"id": member_page_id}]},
-                    "Amount": {"number": float(amount)},
-                    "Serial No.": {"title": [{"text": {"content": name}}]},
+                    ContributorsColumns.BILL: {"relation": [{"id": bill_page_id}]},
+                    ContributorsColumns.CONTRIBUTOR: {"relation": [{"id": member_page_id}]},
+                    ContributorsColumns.AMOUNT: {"number": float(amount)},
+                    ContributorsColumns.SERIAL_NO: {"title": [{"text": {"content": name}}]},
                 },
             )
             created.append({"name": name, "contributionId": contribution["id"]})
