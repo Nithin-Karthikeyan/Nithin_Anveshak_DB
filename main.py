@@ -177,7 +177,7 @@ def add_contributors(body: AddContributors):
             contribution = notion.pages.create(
                 parent={"database_id": os.getenv("NOTION_CONTRIBUTIONS_DB_ID")},
                 properties={
-                    "Bills": {"relation": [{"id": bill_page_id}]},
+                    "Bill": {"relation": [{"id": bill_page_id}]},
                     "Contributor": {"relation": [{"id": member_page_id}]},
                     "Amount": {"number": float(amount)},
                     "Serial No.": {"title": [{"text": {"content": name}}]},
